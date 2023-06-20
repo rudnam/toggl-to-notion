@@ -24,7 +24,7 @@ const utils = {
     const msDiff = date2.getTime() - date1.getTime();
     const hoursDiff = Math.abs(msDiff / (1000 * 60 * 60));
 
-    return hoursDiff.toFixed(2);
+    return hoursDiff.toFixed(3);
   },
 
   projectIdToName: (projectId) => {
