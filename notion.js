@@ -11,9 +11,9 @@ async function getDatabase(dbId) {
 async function getPageId(dbId, title, start=null) {
   if (!title && !start) return null
   if (start) {
-    console.log(`getting page id of task started at ${start}...`)
+    console.log(`getting pageId of task started at ${start}...`)
   } else {
-    console.log(`getting page id of ${title}...`)
+    console.log(`getting pageId of ${title}...`)
   }
 
   let filter = start ? {
@@ -183,7 +183,7 @@ async function deletePage(pageId) {
     archived: true,
   })
   
-  console.log(`page for ${task.title} deleted.`)
+  console.log(`page deleted.`)
   return response
 }
 

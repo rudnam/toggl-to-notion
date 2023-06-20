@@ -23,10 +23,10 @@ app.post("/webhook", async (req, res) => {
   try {
     const body = req.body;
 
-    if (body.payload === 'ping') {
-      console.log(body)
-    } else {
+    if (['created', 'updated', 'deleted'].includes(body.metadata.action)) {
       console.log(`Received "${body.payload.description} ${body.metadata.action}"`);
+    } else {
+      console.log(body)
     }
     
     res.status(200).end();
