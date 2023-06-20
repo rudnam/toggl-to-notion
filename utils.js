@@ -33,7 +33,8 @@ const utils = {
       190199111: "Personal",
       190192148: "The Odin Project - Javascript path",
       190182063: "Uni",
-      190250141: "日本語"
+      190250141: "日本語",
+      193116795: "Programming"
     }
     return projectNames[projectId]
   },
