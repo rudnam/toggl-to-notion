@@ -4,7 +4,6 @@ const notion = new Client({ auth: process.env.NOTION_API_KEY })
 
 async function getDatabase(dbId) {
   const response = await notion.databases.retrieve({ database_id: dbId })
-  console.log(response)
   return response
 }
 
@@ -95,6 +94,15 @@ async function createPage(task) {
       },
       [process.env.NOTION_TAGS_ID]: {
         "relation": tags
+      },
+      [process.env.NOTION_TIME_ENTRY_ID]: {
+        "rich_text": [
+          {
+            "text": {
+              "content": task.timeEntryId
+            }
+          }
+        ]
       }
     }
   })

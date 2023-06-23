@@ -23,7 +23,7 @@ app.post("/webhook", async (req, res) => {
   try {
     const body = req.body;
 
-    if (['created', 'updated', 'deleted'].includes(body.metadata.action)) {
+    if (['created'].includes(body.metadata.action)) {
       console.log(`Received "${body.payload.description} ${body.metadata.action}"`);
     } else {
       console.log(body)
@@ -43,13 +43,13 @@ app.post("/webhook", async (req, res) => {
     if (body.metadata.action === "created" && !pageId) {
       let resp = await notion.createPage(task);
       // console.log(resp);
+    } else if (body.metadata.request_body.includes('"path":"/deleted_at"')) {
+      let resp = await notion.deletePage(pageId);
+      // console.log(resp);
     } else if (body.metadata.action === "updated" || (body.metadata.action === "created" && pageId)) {
       let resp = await notion.updatePage(pageId, task);
       // console.log(resp);
-    } else if (body.metadata.action === 'deleted') {
-      let resp = await notion.deletePage(pageId);
-      // console.log(resp);
-    }
+    } 
 
   } catch (error) {
     console.error(error);

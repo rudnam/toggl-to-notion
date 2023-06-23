@@ -30,9 +30,8 @@ const utils = {
         : null,
       category: utils.projectIdToName(body.payload.project_id),
       tags: body.payload.tags || [],
-      timeEntryId: body.payload.id.toString()
+      timeEntryId: body.payload.id.toString() || null
     }
-    
     return task
   },
 
