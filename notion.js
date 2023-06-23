@@ -8,18 +8,18 @@ async function getDatabase(dbId) {
   return response
 }
 
-async function getPageId(dbId, title, start=null) {
-  if (!title && !start) return null
-  if (start) {
-    console.log(`getting pageId of task started at ${start}...`)
+async function getPageId(dbId, title, timeEntryId=null) {
+  if (!title && !timeEntryId) return null
+  if (timeEntryId) {
+    console.log(`getting pageId of task with timeEntryId ${timeEntryId}...`)
   } else {
     console.log(`getting pageId of ${title}...`)
   }
 
-  let filter = start ? {
-    property: "Start",
-    date: {
-      equals: start
+  let filter = timeEntryId ? {
+    property: "Time entry id",
+    rich_text: {
+      equals: timeEntryId
     }
   } : {
     property: "Name",
@@ -84,9 +84,6 @@ async function createPage(task) {
           }
         ]
       },
-      [process.env.NOTION_DURATION_ID]: {
-        "number": task.duration
-      },
       [process.env.NOTION_STOP_ID]: {
         "date": dateStop
       },
@@ -148,9 +145,6 @@ async function updatePage(pageId, task) {
             }
           }
         ]
-      },
-      [process.env.NOTION_DURATION_ID]: {
-        "number": task.duration
       },
       [process.env.NOTION_STOP_ID]: {
         "date": dateStop

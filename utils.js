@@ -8,25 +8,6 @@ const utils = {
     return gmtPlus8DateString
   },
 
-  appendPlus8: (utcDateString) => {
-    if (!utcDateString) return
-    const offset = "+08:00";
-
-    const appendedString = utcDateString.slice(0, -1) + offset;
-    return appendedString
-  },
-
-  getHoursDiff: (date1String, date2String) => {
-    if (!date1String || !date2String) return
-    const date1 = new Date(date1String);
-    const date2 = new Date(date2String);
-
-    const msDiff = date2.getTime() - date1.getTime();
-    const hoursDiff = Math.abs(msDiff / (1000 * 60 * 60));
-
-    return Number(hoursDiff.toFixed(3));
-  },
-
   projectIdToName: (projectId) => {
     projectNames =   {
       190485674: "Full stack open",
@@ -43,15 +24,13 @@ const utils = {
   getTaskFromBody: (body) => {
     let task = {
       title: body.payload.description,
-      duration: body.payload.stop
-        ? utils.getHoursDiff(body.payload.start, body.payload.stop)
-        : 0,
       start: utils.convertToLocalTime(body.payload.start),
       stop: body.payload.stop
         ? utils.convertToLocalTime(body.payload.stop)
         : null,
       category: utils.projectIdToName(body.payload.project_id),
-      tags: body.payload.tags || []
+      tags: body.payload.tags || [],
+      timeEntryId: body.payload.id.toString()
     }
     
     return task

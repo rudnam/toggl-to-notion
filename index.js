@@ -37,7 +37,7 @@ app.post("/webhook", async (req, res) => {
     let pageId = await notion.getPageId(
       process.env.NOTION_TIME_ENTRIES_DB_ID,
       task.title,
-      utils.appendPlus8(task.start)
+      task.timeEntryId
     );
 
     if (body.metadata.action === "created" && !pageId) {
