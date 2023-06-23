@@ -9,8 +9,8 @@ Uses Toggl webhooks to automatically log time entries to my Notion database.
 - `NOTION_CATEGORIES_DB_ID`
 - `NOTION_TAGS_DB_ID`
 - `NOTION_TASK_ID`
-- `NOTION_DURATION_ID`
 - `NOTION_STOP_ID`
 - `NOTION_START_ID`
 - `NOTION_CATEGORIES_ID`
 - `NOTION_TAGS_ID`
+- `NOTION_TIME_ENTRY_ID`
