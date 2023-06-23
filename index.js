@@ -23,10 +23,14 @@ app.post("/webhook", async (req, res) => {
   try {
     const body = req.body;
 
-    if (['created'].includes(body.metadata.action)) {
+    if (["created", "updated", "deleted"].includes(body.metadata.action)) {
       console.log(`Received "${body.payload.description} ${body.metadata.action}"`);
     } else {
       console.log(body)
+    }
+
+    if (body.metadata.action === "updated" && body.metadata.request_body.includes('"path":"/deleted_at"')) {
+      console.log("Time entry is deleted but meta.data.action is \"updated\" (bug).")
     }
     
     res.status(200).end();
@@ -43,7 +47,7 @@ app.post("/webhook", async (req, res) => {
     if (body.metadata.action === "created" && !pageId) {
       let resp = await notion.createPage(task);
       // console.log(resp);
-    } else if (body.metadata.request_body.includes('"path":"/deleted_at"')) {
+    } else if ((body.metadata.action === "deleted") || body.metadata.request_body.includes('"path":"/deleted_at"')) {
       let resp = await notion.deletePage(pageId);
       // console.log(resp);
     } else if (body.metadata.action === "updated" || (body.metadata.action === "created" && pageId)) {
