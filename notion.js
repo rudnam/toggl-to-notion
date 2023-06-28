@@ -223,11 +223,9 @@ async function createPage(dbId, pageName) {
         ]
       },
       "Tag": {
-        "multi_select": [
-          {
-            "name": pageName
-          }
-        ]
+        "select": {
+          "name": pageName
+        }
       }
     }
   })
