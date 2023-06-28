@@ -61,7 +61,7 @@ async function createTimeEntry(task) {
 
   let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
   if (!categoryId) {
-    createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
     categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
   }
   let category = categoryId ? [{ "id": categoryId}] : []
@@ -70,7 +70,7 @@ async function createTimeEntry(task) {
   for (const tag of task.tags) {
     let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
     if (!tagId) {
-      createPage(process.env.NOTION_TAGS_DB_ID, tag)
+      await createPage(process.env.NOTION_TAGS_DB_ID, tag)
       tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
     }
     tags.push({ "id": tagId })
