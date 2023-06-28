@@ -41,8 +41,8 @@ async function getPageId(dbId, title, timeEntryId=null) {
   }
 }
 
-async function createPage(task) {
-  console.log(`creating page for ${task.title}...`)
+async function createTimeEntry(task) {
+  console.log(`creating time entry for ${task.title}...`)
 
   // Prepare format
   let dateStop = task.stop
@@ -107,12 +107,12 @@ async function createPage(task) {
     }
   })
 
-  console.log(`page for ${task.title} created.`)
+  console.log(`time entry for ${task.title} created.`)
   return response
 }
 
-async function updatePage(pageId, task) {
-  console.log(`updating page for ${task.title}...`)
+async function updateTimeEntry(pageId, task) {
+  console.log(`updating time entry for ${task.title}...`)
   if (!pageId) {
     console.log('update cancelled, pageId is undefined.')
     return
@@ -173,12 +173,12 @@ async function updatePage(pageId, task) {
     }
   })
 
-  console.log(`page for ${task.title} updated.`)
+  console.log(`time entry for ${task.title} updated.`)
   return response
 }
 
-async function deletePage(pageId) {
-  console.log(`deleting page...`)
+async function deleteTimeEntry(pageId) {
+  console.log(`deleting time entry...`)
   if (!pageId) {
     console.log('deletion cancelled, pageId is undefined.')
     return
@@ -189,16 +189,16 @@ async function deletePage(pageId) {
     archived: true,
   })
   
-  console.log(`page deleted.`)
+  console.log(`time entry deleted.`)
   return response
 }
 
 const notionObject = {
   getPageId,
   getDatabase,
-  createPage,
-  updatePage,
-  deletePage
+  createTimeEntry,
+  updateTimeEntry,
+  deleteTimeEntry
 };
 
 module.exports = notionObject

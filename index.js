@@ -45,13 +45,13 @@ app.post("/webhook", async (req, res) => {
     );
 
     if ((body.metadata.action === "deleted") || body.metadata.request_body.includes('"path":"/deleted_at"')) {
-      let resp = await notion.deletePage(pageId);
+      let resp = await notion.deleteTimeEntry(pageId);
       // console.log(resp);
     } else if ((body.metadata.action === "created" || body.metadata.action === "updated") && !pageId) {
-      let resp = await notion.createPage(task);
+      let resp = await notion.createTimeEntry(task);
       // console.log(resp);
     } else if ((body.metadata.action === "updated" || body.metadata.action === "created") && pageId) {
-      let resp = await notion.updatePage(pageId, task);
+      let resp = await notion.updateTimeEntry(pageId, task);
       // console.log(resp);
     } 
 
