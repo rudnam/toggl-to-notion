@@ -60,12 +60,20 @@ async function createTimeEntry(task) {
     : null;
 
   let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+  if (!categoryId) {
+    createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+  }
   let category = categoryId ? [{ "id": categoryId}] : []
 
-  let tags = [];
+  let tags = []
   for (const tag of task.tags) {
-    let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag);
-    tags.push({ "id": tagId });
+    let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
+    if (!tagId) {
+      createPage(process.env.NOTION_TAGS_DB_ID, tag)
+      tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
+    }
+    tags.push({ "id": tagId })
   }
 
   const response = await notion.pages.create({
@@ -134,16 +142,20 @@ async function updateTimeEntry(pageId, task) {
     : null;
 
   let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+  if (!categoryId) {
+    createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+  }
   let category = categoryId ? [{ "id": categoryId}] : []
 
-  let tagsIdArray = [];
+  let tags = []
   for (const tag of task.tags) {
-    let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag);
-    if (tagId) {
-      tagsIdArray.push({ "id": tagId })
-    } else {
-      continue
+    let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
+    if (!tagId) {
+      createPage(process.env.NOTION_TAGS_DB_ID, tag)
+      tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
     }
+    tags.push({ "id": tagId })
   }
 
   const response = await notion.pages.update({
@@ -168,7 +180,7 @@ async function updateTimeEntry(pageId, task) {
         "relation": category
       },
       [process.env.NOTION_TAGS_ID]: {
-        "relation": tagsIdArray
+        "relation": tags
       }
     }
   })
@@ -190,6 +202,37 @@ async function deleteTimeEntry(pageId) {
   })
   
   console.log(`time entry deleted.`)
+  return response
+}
+
+async function createPage(dbId, pageName) {
+  console.log(`creating page for ${pageName}...`)
+  const response = await notion.pages.create({
+    "parent": {
+      "type": "database_id",
+      "database_id": dbId
+    },
+    "properties": {
+      [process.env.NOTION_TASK_ID]: {
+        "title": [
+          {
+            "text": {
+              "content": pageName
+            }
+          }
+        ]
+      },
+      "Tag": {
+        "multi_select": [
+          {
+            "name": pageName
+          }
+        ]
+      }
+    }
+  })
+
+  console.log(`page for ${pageName} created.`)
   return response
 }
 
