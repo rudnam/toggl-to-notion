@@ -25,15 +25,17 @@ app.post("/webhook", async (req, res) => {
 
     if (["created", "updated", "deleted"].includes(body.metadata.action)) {
       console.log(`Received "${body.payload.description} ${body.metadata.action}"`);
+      res.status(200).end();
     } else {
       console.log(body)
+      res.status(200).end();
+      return;
     }
 
     if (body.metadata.action === "updated" && body.metadata.request_body.includes('"path":"/deleted_at"')) {
       console.log("Time entry is deleted but meta.data.action is \"updated\" (bug).")
     }
     
-    res.status(200).end();
 
     // Set up time entry
     let task = utils.getTaskFromBody(body);
