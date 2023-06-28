@@ -18,7 +18,7 @@ const utils = {
       193116795: "Programming",
       193123935: "Deutsch"
     }
-    return projectNames[projectId]
+    return projectNames[projectId] || "undefined projectName"
   },
 
   getTaskFromBody: (body) => {

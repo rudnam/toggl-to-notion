@@ -10,9 +10,9 @@ async function getDatabase(dbId) {
 async function getPageId(dbId, title, timeEntryId=null) {
   if (!title && !timeEntryId) return null
   if (timeEntryId) {
-    console.log(`getting pageId of task with timeEntryId ${timeEntryId}...`)
+    console.log(`Getting pageId of task with timeEntryId ${timeEntryId}...`)
   } else {
-    console.log(`getting pageId of ${title}...`)
+    console.log(`Getting pageId of ${title}...`)
   }
 
   let filter = timeEntryId ? {
@@ -36,13 +36,13 @@ async function getPageId(dbId, title, timeEntryId=null) {
     console.log('pageId found.')
     return response.results[0].id
   } else {
-    console.log('no pageId found.')
+    console.log('No pageId found.')
     return null
   }
 }
 
 async function createTimeEntry(task) {
-  console.log(`creating time entry for ${task.title}...`)
+  console.log(`Creating time entry for ${task.title}...`)
 
   // Prepare format
   let dateStop = task.stop
@@ -115,14 +115,14 @@ async function createTimeEntry(task) {
     }
   })
 
-  console.log(`time entry for ${task.title} created.`)
+  console.log(`Time entry for ${task.title} created.`)
   return response
 }
 
 async function updateTimeEntry(pageId, task) {
-  console.log(`updating time entry for ${task.title}...`)
+  console.log(`Updating time entry for ${task.title}...`)
   if (!pageId) {
-    console.log('update cancelled, pageId is undefined.')
+    console.log('Update cancelled, pageId is undefined.')
     return
   }
 
@@ -143,7 +143,7 @@ async function updateTimeEntry(pageId, task) {
 
   let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
   if (!categoryId) {
-    createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
     categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
   }
   let category = categoryId ? [{ "id": categoryId}] : []
@@ -152,7 +152,7 @@ async function updateTimeEntry(pageId, task) {
   for (const tag of task.tags) {
     let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
     if (!tagId) {
-      createPage(process.env.NOTION_TAGS_DB_ID, tag)
+      await createPage(process.env.NOTION_TAGS_DB_ID, tag)
       tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
     }
     tags.push({ "id": tagId })
@@ -185,14 +185,14 @@ async function updateTimeEntry(pageId, task) {
     }
   })
 
-  console.log(`time entry for ${task.title} updated.`)
+  console.log(`Time entry for ${task.title} updated.`)
   return response
 }
 
 async function deleteTimeEntry(pageId) {
-  console.log(`deleting time entry...`)
+  console.log(`Deleting time entry...`)
   if (!pageId) {
-    console.log('deletion cancelled, pageId is undefined.')
+    console.log('Deletion cancelled, pageId is undefined.')
     return
   }
 
@@ -201,12 +201,12 @@ async function deleteTimeEntry(pageId) {
     archived: true,
   })
   
-  console.log(`time entry deleted.`)
+  console.log(`Time entry deleted.`)
   return response
 }
 
 async function createPage(dbId, pageName) {
-  console.log(`creating page for ${pageName}...`)
+  console.log(`Creating page for ${pageName}...`)
   const response = await notion.pages.create({
     "parent": {
       "type": "database_id",
@@ -230,7 +230,7 @@ async function createPage(dbId, pageName) {
     }
   })
 
-  console.log(`page for ${pageName} created.`)
+  console.log(`Page for ${pageName} created.`)
   return response
 }
 
