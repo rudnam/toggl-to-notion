@@ -139,7 +139,11 @@ async function updatePage(pageId, task) {
   let tagsIdArray = [];
   for (const tag of task.tags) {
     let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag);
-    tagsIdArray.push({ "id": tagId });
+    if (tagId) {
+      tagsIdArray.push({ "id": tagId })
+    } else {
+      continue
+    }
   }
 
   const response = await notion.pages.update({
