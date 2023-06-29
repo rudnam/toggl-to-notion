@@ -8,7 +8,6 @@ async function getDatabase(dbId) {
 }
 
 async function getPageId(dbId, title, timeEntryId=null) {
-  if (!title && !timeEntryId) return null
   if (timeEntryId) {
     console.log(`Getting pageId of task with timeEntryId ${timeEntryId}...`)
   } else {
@@ -59,12 +58,15 @@ async function createTimeEntry(task) {
       }
     : null;
 
-  let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-  if (!categoryId) {
-    await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-    categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+  let category = []
+  if (task.category) {
+    let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    if (!categoryId) {
+      await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+      categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    }
+    category.push({ "id": categoryId })
   }
-  let category = categoryId ? [{ "id": categoryId}] : []
 
   let tags = []
   for (const tag of task.tags) {
@@ -141,12 +143,15 @@ async function updateTimeEntry(pageId, task) {
       }
     : null;
 
-  let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-  if (!categoryId) {
-    await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-    categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+  let category = []
+  if (task.category) {
+    let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    if (!categoryId) {
+      await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+      categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
+    }
+    category.push({ "id": categoryId })
   }
-  let category = categoryId ? [{ "id": categoryId}] : []
 
   let tags = []
   for (const tag of task.tags) {

@@ -28,9 +28,11 @@ const utils = {
       stop: body.payload.stop
         ? utils.convertToLocalTime(body.payload.stop)
         : null,
-      category: utils.projectIdToName(body.payload.project_id),
+      category: body.payload.project_id
+        ? utils.projectIdToName(body.payload.project_id)
+        : null,
       tags: body.payload.tags || [],
-      timeEntryId: body.payload.id.toString() || null
+      timeEntryId: body.payload.id.toString()
     }
     return task
   },
