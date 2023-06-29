@@ -46,18 +46,23 @@ app.post("/webhook", async (req, res) => {
       task.timeEntryId
     );
 
+    let resp;
     if ((body.metadata.action === "deleted") || body.metadata.request_body.includes('"path":"/deleted_at"')) {
-      let resp = await notion.deleteTimeEntry(pageId);
-      // console.log(resp);
-    } else if ((body.metadata.action === "created" || body.metadata.action === "updated") && !pageId) {
-      let resp = await notion.createTimeEntry(task);
-      // console.log(resp);
-    } else if ((body.metadata.action === "updated" || body.metadata.action === "created") && pageId) {
-      let resp = await notion.updateTimeEntry(pageId, task);
-      // console.log(resp);
+      await delay(5000);
+      resp = await notion.deleteTimeEntry(pageId);
+    } else if (body.metadata.action === "created") {
+      resp = await notion.createTimeEntry(task);
+    } else if (body.metadata.action === "updated") {
+      await delay(5000);
+      resp = await notion.updateTimeEntry(pageId, task);
     } 
-
+    // console.log(resp);
+    
   } catch (error) {
     console.error(error);
   }
 })
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
