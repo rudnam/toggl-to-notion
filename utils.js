@@ -1,3 +1,5 @@
+const toggl = require('./toggl');
+
 const utils = {
   convertToLocalTime: (utcDateString) => {
     if (!utcDateString) return
@@ -8,28 +10,15 @@ const utils = {
     return gmtPlus8DateString
   },
 
-  projectIdToName: (projectId) => {
-    projectNames =   {
-      190485674: "Full stack open",
-      190199111: "Personal",
-      190192148: "The Odin Project - Javascript path",
-      190182063: "Uni",
-      190250141: "日本語",
-      193116795: "Programming",
-      193123935: "Deutsch"
-    }
-    return projectNames[projectId] || "undefined projectName"
-  },
-
-  getTaskFromBody: (body) => {
+  getTaskFromBody: async (body) => {
     let task = {
       title: body.payload.description,
       start: utils.convertToLocalTime(body.payload.start),
       stop: body.payload.stop
         ? utils.convertToLocalTime(body.payload.stop)
         : null,
-      category: body.payload.project_id
-        ? utils.projectIdToName(body.payload.project_id)
+      project: body.payload.project_id
+        ? await toggl.projectIdToName(body.payload.project_id)
         : null,
       tags: body.payload.tags || [],
       timeEntryId: body.payload.id.toString()

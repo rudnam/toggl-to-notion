@@ -1,4 +1,5 @@
 const { Client } = require('@notionhq/client')
+const toggl = require('./toggl');
 
 const notion = new Client({ auth: process.env.NOTION_API_KEY })
 
@@ -31,7 +32,7 @@ async function getPageId(dbId, title, timeEntryId=null) {
     filter: filter
   })
 
-  if (response['results'].length != 0) {
+  if (response['results'].length !== 0) {
     console.log('pageId found.')
     return response.results[0].id
   } else {
@@ -43,41 +44,6 @@ async function getPageId(dbId, title, timeEntryId=null) {
 async function createTimeEntry(task) {
   console.log(`Creating time entry for ${task.title}...`)
 
-  // Prepare format
-  let dateStop = task.stop
-    ? {
-        start: task.stop,
-        time_zone: "Asia/Manila"
-      }
-    : null;
-
-  let dateStart = task.start
-    ? {
-        start: task.start,
-        time_zone: "Asia/Manila"
-      }
-    : null;
-
-  let category = []
-  if (task.category) {
-    let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-    if (!categoryId) {
-      await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-      categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-    }
-    category.push({ "id": categoryId })
-  }
-
-  let tags = []
-  for (const tag of task.tags) {
-    let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
-    if (!tagId) {
-      await createPage(process.env.NOTION_TAGS_DB_ID, tag)
-      tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
-    }
-    tags.push({ "id": tagId })
-  }
-
   const response = await notion.pages.create({
     "parent": {
       "type": "database_id",
@@ -85,34 +51,22 @@ async function createTimeEntry(task) {
     },
     "properties": {
       [process.env.NOTION_TASK_ID]: {
-        "title": [
-          {
-            "text": {
-              "content": task.title
-            }
-          }
-        ]
+        "title": await prepareFormat("title", task.title)
       },
       [process.env.NOTION_STOP_ID]: {
-        "date": dateStop
+        "date": await prepareFormat("date", task.stop)
       },
       [process.env.NOTION_START_ID]: {
-        "date": dateStart
+        "date": await prepareFormat("date", task.start)
       },
-      [process.env.NOTION_CATEGORIES_ID]: {
-        "relation": category
+      [process.env.NOTION_PROJECTS_ID]: {
+        "relation": await prepareFormat("relation", task.project, relationType="project")
       },
       [process.env.NOTION_TAGS_ID]: {
-        "relation": tags
+        "relation": await prepareFormat("relation", task.tags, relationType="tags")
       },
       [process.env.NOTION_TIME_ENTRY_ID]: {
-        "rich_text": [
-          {
-            "text": {
-              "content": task.timeEntryId
-            }
-          }
-        ]
+        "rich_text": await prepareFormat("rich_text", task.timeEntryId)
       }
     }
   })
@@ -128,64 +82,23 @@ async function updateTimeEntry(pageId, task) {
     return
   }
 
-  // Prepare format
-  let dateStop = task.stop
-    ? {
-        start: task.stop,
-        time_zone: "Asia/Manila"
-      }
-    : null;
-
-  let dateStart = task.start
-    ? {
-        start: task.start,
-        time_zone: "Asia/Manila"
-      }
-    : null;
-
-  let category = []
-  if (task.category) {
-    let categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-    if (!categoryId) {
-      await createPage(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-      categoryId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, task.category)
-    }
-    category.push({ "id": categoryId })
-  }
-
-  let tags = []
-  for (const tag of task.tags) {
-    let tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
-    if (!tagId) {
-      await createPage(process.env.NOTION_TAGS_DB_ID, tag)
-      tagId = await getPageId(process.env.NOTION_TAGS_DB_ID, tag)
-    }
-    tags.push({ "id": tagId })
-  }
-
   const response = await notion.pages.update({
     page_id: pageId,
     properties: {
       [process.env.NOTION_TASK_ID]: {
-        title: [
-          {
-            text: {
-              content: task.title
-            }
-          }
-        ]
+        "title": await prepareFormat("title", task.title)
       },
       [process.env.NOTION_STOP_ID]: {
-        "date": dateStop
+        "date": await prepareFormat("date", task.stop)
       },
       [process.env.NOTION_START_ID]: {
-        "date": dateStart
+        "date": await prepareFormat("date", task.start)
       },
-      [process.env.NOTION_CATEGORIES_ID]: {
-        "relation": category
+      [process.env.NOTION_PROJECTS_ID]: {
+        "relation": await prepareFormat("relation", task.project, relationType="project")
       },
       [process.env.NOTION_TAGS_ID]: {
-        "relation": tags
+        "relation": await prepareFormat("relation", task.tags, relationType="tags")
       }
     }
   })
@@ -210,33 +123,150 @@ async function deleteTimeEntry(pageId) {
   return response
 }
 
-async function createPage(dbId, pageName) {
-  console.log(`Creating page for ${pageName}...`)
+async function createTag(tagName) {
+  console.log(`Creating page for tag ${tagName}...`)
+
   const response = await notion.pages.create({
     "parent": {
       "type": "database_id",
-      "database_id": dbId
+      "database_id": process.env.NOTION_TAGS_DB_ID
     },
     "properties": {
       [process.env.NOTION_TASK_ID]: {
-        "title": [
-          {
-            "text": {
-              "content": pageName
-            }
-          }
-        ]
+        "title": await prepareFormat("title", tagName)
       },
       "Tag": {
-        "select": {
-          "name": pageName
-        }
+        "select": await prepareFormat("select", tagName)
       }
     }
   })
 
-  console.log(`Page for ${pageName} created.`)
+  console.log(`Page for tag ${tagName} created.`)
   return response
+}
+
+async function createProject(projectName) {
+  console.log(`Creating page for project ${projectName}...`)
+
+  const response = await notion.pages.create({
+    "parent": {
+      "type": "database_id",
+      "database_id": process.env.NOTION_PROJECTS_DB_ID
+    },
+    "properties": {
+      [process.env.NOTION_TASK_ID]: {
+        "title": await prepareFormat("title", projectName)
+      },
+      "Tag": {
+        "select": await prepareFormat("select", projectName)
+      },
+      [process.env.NOTION_PROJECT_CATEGORY_ID]: {
+        "relation": await prepareFormat("relation", await toggl.getProjectClient(projectName), relationType="category")
+      }
+
+    }
+  })
+
+  console.log(`Page for project ${projectName} created.`)
+  return response;
+}
+
+async function createCategory(categoryName) {
+  console.log(`Creating page for category ${categoryName}...`)
+  
+  const response = await notion.pages.create({
+    "parent": {
+      "type": "database_id",
+      "database_id": process.env.NOTION_CATEGORIES_DB_ID
+    },
+    "properties": {
+      [process.env.NOTION_TASK_ID]: {
+        "title": await prepareFormat("title", categoryName)
+      },
+      "Tag": {
+        "select": await prepareFormat("select", categoryName)
+      }
+    }
+  })
+  console.log(`Page for category ${categoryName} created.`)
+  return response
+}
+
+async function prepareFormat(type, data, relationType=null) {
+  switch(type) {
+    case "title":
+      return [
+        {
+          "text": {
+            "content": data
+          }
+        }
+      ]
+      break;
+
+    case "date":
+      return data
+        ? {
+          start: data,
+          time_zone: "Asia/Manila"
+        }
+        : null;
+      break;
+
+    case "rich_text":
+      return data
+        ? [
+          {
+            "text": {
+              "content": data
+            }
+          }
+        ]
+        : null;
+      break;
+
+    case "select":
+      return data
+      ? {
+        "name": data
+      }
+      : null;
+      break;
+      
+    case "relation":
+      if (!data) return [];
+
+      if (relationType === "category") {
+        let pageId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, data)
+          if (!pageId) {
+            await createCategory(data)
+            pageId = await getPageId(process.env.NOTION_CATEGORIES_DB_ID, data)
+          }
+          return [{ "id": pageId }]
+      } else if (relationType === "project") {
+        let pageId = await getPageId(process.env.NOTION_PROJECTS_DB_ID, data)
+          if (!pageId) {
+            await createProject(data)
+            pageId = await getPageId(process.env.NOTION_PROJECTS_DB_ID, data)
+          }
+          return [{ "id": pageId }]
+      } else if (relationType === "tags") {
+        let pageIds = []
+        for (const dataItem of data) {
+          let pageId = await getPageId(process.env.NOTION_TAGS_DB_ID, dataItem)
+          if (!pageId) {
+            await createTag(dataItem)
+            pageId = await getPageId(process.env.NOTION_TAGS_DB_ID, dataItem)
+          }
+          pageIds.push({ "id": pageId })
+        }
+        return pageIds
+      } else {
+        console.error("Relation type undefined.")
+        return
+      }
+      break;
+  }
 }
 
 const notionObject = {

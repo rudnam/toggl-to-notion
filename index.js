@@ -2,6 +2,7 @@ require('dotenv').config()
 const express = require("express")
 const bodyParser = require("body-parser")
 const notion = require('./notion')
+const toggl = require('./toggl');
 const utils = require('./utils');
 
 const app = express()
@@ -15,8 +16,10 @@ app.get('/', (req, res) => {
   res.send('Nothing here')
 })
 
-app.get("/webhook", (req, res) => {
+app.get("/webhook", async (req, res) => {
   res.send("webhook route");
+  let dbResp = await notion.getDatabase(process.env.NOTION_PROJECTS_DB_ID);
+  console.log(dbResp);
 });
 
 app.post("/webhook", async (req, res) => {
@@ -37,8 +40,7 @@ app.post("/webhook", async (req, res) => {
     }
     
 
-    // Set up time entry
-    let task = utils.getTaskFromBody(body);
+    let task = await utils.getTaskFromBody(body);
 
     let pageId = await notion.getPageId(
       process.env.NOTION_TIME_ENTRIES_DB_ID,
@@ -50,11 +52,11 @@ app.post("/webhook", async (req, res) => {
     if ((body.metadata.action === "deleted") || body.metadata.request_body.includes('"path":"/deleted_at"')) {
       await delay(5000);
       resp = await notion.deleteTimeEntry(pageId);
-    } else if (body.metadata.action === "created") {
-      resp = await notion.createTimeEntry(task);
     } else if (body.metadata.action === "updated") {
       await delay(5000);
       resp = await notion.updateTimeEntry(pageId, task);
+    } else if (body.metadata.action === "created") {
+      resp = await notion.createTimeEntry(task);
     } 
     // console.log(resp);
     
