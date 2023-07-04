@@ -1,4 +1,5 @@
 const base64 = require('base-64');
+const fetch = require("node-fetch");
 
 async function fetchProjects() {
   let response = await fetch(`https://api.track.toggl.com/api/v9/workspaces/${process.env.TOGGL_WORKSPACE_ID}/projects`, {
